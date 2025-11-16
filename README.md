@@ -32,6 +32,12 @@ An equity trading simulation featuring 4 autonomous AI traders powered by the Op
   - Google Gemini 2.5 Flash
   - xAI Grok 3 Mini
 
+## 📸 Dashboard Preview
+
+![Trading Dashboard](screenshot.png)
+
+Watch all 4 AI traders in action with real-time portfolio tracking, live trade logs, detailed holdings, and transaction history - all in one beautiful dashboard.
+
 ## 🎯 Project Structure
 
 ```

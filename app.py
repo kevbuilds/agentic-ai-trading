@@ -57,11 +57,22 @@ class Trader:
         """Convert holdings to DataFrame for display"""
         holdings = self.account.get_holdings()
         if not holdings:
-            return pd.DataFrame(columns=["Symbol", "Quantity"])
+            return pd.DataFrame(columns=["Symbol", "Quantity", "Price", "Value"])
 
-        df = pd.DataFrame(
-            [{"Symbol": symbol, "Quantity": quantity} for symbol, quantity in holdings.items()]
-        )
+        from market import get_share_price
+        
+        holdings_data = []
+        for symbol, quantity in holdings.items():
+            price = get_share_price(symbol)
+            value = price * quantity
+            holdings_data.append({
+                "Symbol": symbol,
+                "Quantity": quantity,
+                "Price": f"${price:,.2f}",
+                "Value": f"${value:,.2f}"
+            })
+        
+        df = pd.DataFrame(holdings_data)
         return df
 
     def get_transactions_df(self) -> pd.DataFrame:
@@ -74,11 +85,25 @@ class Trader:
 
     def get_portfolio_value(self) -> str:
         """Calculate total portfolio value based on current prices"""
-        portfolio_value = self.account.calculate_portfolio_value() or 0.0
+        cash_balance = self.account.balance
+        
+        # Calculate stock value
+        stock_value = 0.0
+        from market import get_share_price
+        for symbol, quantity in self.account.holdings.items():
+            stock_value += get_share_price(symbol) * quantity
+        
+        portfolio_value = cash_balance + stock_value
         pnl = self.account.calculate_profit_loss(portfolio_value) or 0.0
         color = "green" if pnl >= 0 else "red"
         emoji = "⬆" if pnl >= 0 else "⬇"
-        return f"<div style='text-align: center;background-color:{color};'><span style='font-size:32px'>${portfolio_value:,.0f}</span><span style='font-size:24px'>&nbsp;&nbsp;&nbsp;{emoji}&nbsp;${pnl:,.0f}</span></div>"
+        
+        return f"""<div style='text-align: center;background-color:{color};padding:10px;'>
+            <div style='font-size:32px;font-weight:bold;'>${portfolio_value:,.0f} {emoji} ${pnl:,.0f}</div>
+            <div style='font-size:16px;margin-top:8px;'>
+                💵 Cash: ${cash_balance:,.0f} &nbsp;|&nbsp; 📈 Stocks: ${stock_value:,.0f}
+            </div>
+        </div>"""
 
     def get_logs(self, previous=None) -> str:
         logs = read_log(self.name, last_n=13)
@@ -116,9 +141,9 @@ class TraderView:
                 self.holdings_table = gr.Dataframe(
                     value=self.trader.get_holdings_df,
                     label="Holdings",
-                    headers=["Symbol", "Quantity"],
+                    headers=["Symbol", "Quantity", "Price", "Value"],
                     row_count=(5, "dynamic"),
-                    col_count=2,
+                    col_count=4,
                     max_height=300,
                     elem_classes=["dataframe-fix-small"],
                 )
