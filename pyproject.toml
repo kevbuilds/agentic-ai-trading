@@ -34,6 +34,9 @@ Documentation = "https://github.com/kevbuilds/agentic-ai-trading#readme"
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
 [tool.uv]
 dev-dependencies = [
     "ipykernel>=6.29.5",

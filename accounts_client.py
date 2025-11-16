@@ -3,8 +3,12 @@ from mcp.client.stdio import stdio_client
 from mcp import StdioServerParameters
 from agents import FunctionTool
 import json
+from pathlib import Path
 
-params = StdioServerParameters(command="uv", args=["run", "accounts_server.py"], env=None)
+PROJECT_DIR = Path(__file__).parent.absolute()
+PYTHON_BIN = str(PROJECT_DIR / ".venv" / "bin" / "python")
+
+params = StdioServerParameters(command=PYTHON_BIN, args=[str(PROJECT_DIR / "accounts_server.py")], env=None)
 
 
 async def list_accounts_tools():

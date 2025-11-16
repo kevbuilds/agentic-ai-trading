@@ -1,8 +1,13 @@
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 from market import is_paid_polygon, is_realtime_polygon
 
 load_dotenv(override=True)
+
+# Get absolute paths
+PROJECT_DIR = Path(__file__).parent.absolute()
+PYTHON_BIN = str(PROJECT_DIR / ".venv" / "bin" / "python")
 
 brave_env = {"BRAVE_API_KEY": os.getenv("BRAVE_API_KEY")}
 polygon_api_key = os.getenv("POLYGON_API_KEY")
@@ -11,19 +16,19 @@ polygon_api_key = os.getenv("POLYGON_API_KEY")
 
 if is_paid_polygon or is_realtime_polygon:
     market_mcp = {
-        "command": "uvx",
-        "args": ["--from", "git+https://github.com/polygon-io/mcp_polygon@v0.1.0", "mcp_polygon"],
+        "command": "python3",
+        "args": ["-m", "uvx", "--from", "git+https://github.com/polygon-io/mcp_polygon@v0.1.0", "mcp_polygon"],
         "env": {"POLYGON_API_KEY": polygon_api_key},
     }
 else:
-    market_mcp = {"command": "uv", "args": ["run", "market_server.py"]}
+    market_mcp = {"command": PYTHON_BIN, "args": [str(PROJECT_DIR / "market_server.py")]}
 
 
 # The full set of MCP servers for the trader: Accounts, Push Notification and the Market
 
 trader_mcp_server_params = [
-    {"command": "uv", "args": ["run", "accounts_server.py"]},
-    {"command": "uv", "args": ["run", "push_server.py"]},
+    {"command": PYTHON_BIN, "args": [str(PROJECT_DIR / "accounts_server.py")]},
+    {"command": PYTHON_BIN, "args": [str(PROJECT_DIR / "push_server.py")]},
     market_mcp,
 ]
 
@@ -32,7 +37,7 @@ trader_mcp_server_params = [
 
 def researcher_mcp_server_params(name: str):
     return [
-        {"command": "uvx", "args": ["mcp-server-fetch"]},
+        {"command": PYTHON_BIN, "args": ["-m", "mcp_server_fetch"]},
         {
             "command": "npx",
             "args": ["-y", "@modelcontextprotocol/server-brave-search"],
@@ -41,6 +46,6 @@ def researcher_mcp_server_params(name: str):
         {
             "command": "npx",
             "args": ["-y", "mcp-memory-libsql"],
-            "env": {"LIBSQL_URL": f"file:./memory/{name}.db"},
+            "env": {"LIBSQL_URL": f"file:{PROJECT_DIR}/memory/{name}.db"},
         },
     ]

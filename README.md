@@ -36,7 +36,6 @@ An equity trading simulation featuring 4 autonomous AI traders powered by the Op
 
 ```
 agentic-ai-trading/
-├── 5_lab5.ipynb           # Main tutorial notebook
 ├── trading_floor.py        # Scheduler that runs traders periodically
 ├── traders.py              # Trader agent implementation
 ├── accounts.py             # Account and transaction management
@@ -62,7 +61,7 @@ agentic-ai-trading/
 
 - Python 3.12 or higher
 - Node.js (for MCP servers)
-- uv (Python package manager) - Install with: `pip install uv`
+- pip (Python package manager)
 
 ### Installation
 
@@ -72,17 +71,32 @@ agentic-ai-trading/
    cd agentic-ai-trading
    ```
 
-2. **Install dependencies**
+2. **Install uv package manager**
    ```bash
-   uv sync
+   python3 -m pip install uv
    ```
 
-3. **Set up environment variables**
-   
-   Copy `.env.example` to `.env` and fill in your API keys:
+3. **Create virtual environment**
    ```bash
-   cp .env.example .env
+   python3 -m uv venv
    ```
+
+4. **Install dependencies**
+   ```bash
+   python3 -m uv pip install --python .venv/bin/python \
+     anthropic gradio httpx "mcp[cli]" mcp-server-fetch openai \
+     openai-agents plotly polygon-api-client pydantic python-dotenv \
+     requests ipykernel jupyter pytest ruff
+   ```
+
+5. **Set up environment variables**
+   
+   Copy `env.example` to `.env` and fill in your API keys:
+   ```bash
+   cp env.example .env
+   ```
+
+   Then edit `.env` with your favorite text editor and add:
 
    Required API keys:
    - `OPENAI_API_KEY` - Your OpenAI API key ([Get one here](https://platform.openai.com/api-keys))
@@ -95,24 +109,27 @@ agentic-ai-trading/
    - `GOOGLE_API_KEY` - For Gemini model
    - `GROK_API_KEY` - For Grok model
 
-4. **Initialize the traders**
+6. **Initialize the traders**
    ```bash
-   uv run reset.py
+   source .venv/bin/activate
+   python reset.py
    ```
 
 ### Running the Simulation
 
 1. **Start the UI** (in one terminal):
    ```bash
-   uv run app.py
+   source .venv/bin/activate
+   python app.py
    ```
    This will open a browser window with the trading dashboard at http://127.0.0.1:7860
 
 2. **Start the trading floor** (in another terminal):
    ```bash
-   uv run trading_floor.py
+   source .venv/bin/activate
+   python trading_floor.py
    ```
-   This runs the traders on a schedule (default: every 60 minutes)
+   This runs the traders immediately, then repeats every 60 minutes (configurable)
 
 ## ⚙️ Configuration
 
@@ -225,7 +242,8 @@ This is a **simulation for educational purposes**. Do not use this for real trad
 ### Running Tests
 
 ```bash
-uv run pytest
+source .venv/bin/activate
+pytest
 ```
 
 ### Resetting the Simulation
@@ -233,7 +251,8 @@ uv run pytest
 To start fresh with initial balances and strategies:
 
 ```bash
-uv run reset.py
+source .venv/bin/activate
+python reset.py
 ```
 
 This resets all traders to $10,000 and their original strategies.
